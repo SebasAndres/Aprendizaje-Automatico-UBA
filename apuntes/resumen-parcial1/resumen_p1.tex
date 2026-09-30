@@ -1,0 +1,570 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[a4paper,margin=2cm,top=2.2cm,bottom=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Lato}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{polyglossia}\setmainlanguage{spanish}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{booktabs,tabularx,array}
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+\usepackage{needspace}
+\pretocmd{\section}{\needspace{12\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{6\baselineskip}}{}{}
+\usepackage{tikz}
+\usepackage{multicol}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ink}{HTML}{1F2937}
+\definecolor{accent}{HTML}{2563EB}
+\definecolor{accentsoft}{HTML}{EFF6FF}
+\definecolor{warn}{HTML}{DC2626}
+\definecolor{warnsoft}{HTML}{FEF2F2}
+\definecolor{good}{HTML}{059669}
+\definecolor{goodsoft}{HTML}{ECFDF5}
+\definecolor{muted}{HTML}{6B7280}
+\color{ink}
+
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{4pt}
+\setlist{itemsep=1pt,topsep=2pt,leftmargin=1.2em}
+\renewcommand{\arraystretch}{1.25}
+
+\titleformat{\section}{\Large\bfseries\color{accent}}{\thesection}{0.6em}{}[{\color{accent!30}\titlerule[1pt]}]
+\titleformat{\subsection}{\large\bfseries\color{ink}}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{3pt}
+
+\pagestyle{fancy}\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\small\color{muted}Aprendizaje Automático — Resumen 1er parcial}
+\fancyfoot[R]{\small\color{muted}\thepage}
+
+\newtcolorbox{formula}[1][]{enhanced,colback=accentsoft,colframe=accent,boxrule=0pt,leftrule=3pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt,before upper={\ifstrempty{#1}{}{{\bfseries\small\color{accent}#1}\par\smallskip}}}
+\newtcolorbox{trampa}{enhanced,breakable,colback=warnsoft,colframe=warn,boxrule=0pt,leftrule=3pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt}
+\newtcolorbox{ejemplo}{enhanced,breakable,colback=goodsoft,colframe=good,boxrule=0pt,leftrule=3pt,arc=2pt,left=8pt,right=8pt,top=4pt,bottom=4pt}
+\newcommand{\trap}{\textbf{\color{warn}Ojo:}\ }
+\newcommand{\ej}{\textbf{\color{good}Ejemplo:}\ }
+\newcommand{\guia}[1]{\hfill{\small\color{muted}\textit{Guía #1}}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\E}{\mathbb{E}}
+
+\begin{document}
+
+\begin{tcolorbox}[enhanced,colback=accent,colframe=accent,arc=4pt,left=14pt,right=14pt,top=12pt,bottom=12pt]
+\color{white}
+{\Huge\bfseries Aprendizaje Automático}\\[4pt]
+{\Large Resumen de conceptos y fórmulas — Primer parcial}\\[6pt]
+{\small FCEyN – UBA · 1c 2026 · Guías 1–9 (sin clustering)}
+\end{tcolorbox}
+
+\vspace{2pt}
+{\small\color{muted}Cómo leerlo: \colorbox{accentsoft}{\color{accent}\bfseries azul} = fórmula/definición a saber de memoria; \colorbox{warnsoft}{\color{warn}\bfseries rojo} = trampa típica de V/F; \colorbox{goodsoft}{\color{good}\bfseries verde} = ejemplo resuelto o número de referencia.}
+
+\begin{multicols}{2}
+\small\tableofcontents
+\end{multicols}
+
+%=====================================================================
+\section{Probabilidad y estadística}\guia{1}
+
+\subsection{Reglas básicas}
+\begin{formula}[Definiciones]
+\begin{align*}
+P(A\mid B) &= \frac{P(A\cap B)}{P(B)} \qquad\qquad A\perp B \iff P(A\cap B)=P(A)P(B)\\
+\textbf{Prob. total: } P(B) &= \sum_{i=1}^n P(B\mid A_i)\,P(A_i)\quad(\{A_i\}\text{ partición},\ P(A_i)>0)\\
+\textbf{Bayes: } P(A\mid B) &= \frac{P(B\mid A)P(A)}{P(B)} = \frac{P(B\mid A)P(A)}{\sum_j P(B\mid A_j)P(A_j)}
+\end{align*}
+\end{formula}
+\begin{itemize}
+  \item \textbf{Demostración de prob. total}: $B=\bigcup_i (B\cap A_i)$ unión disjunta $\Rightarrow P(B)=\sum_i P(B\cap A_i)=\sum_i P(B\mid A_i)P(A_i)$.
+  \item \textbf{Demostración de Bayes}: $P(A\cap B)=P(A\mid B)P(B)=P(B\mid A)P(A)$; despejar.
+  \item \textbf{Independencia de a pares $\neq$ mutua}: se necesita además $P(A\cap B\cap C)=P(A)P(B)P(C)$. Dos monedas: $A$=1ra cara, $B$=2da cara, $C$=iguales. $P(\cdot)=\tfrac12$ c/u, cada intersección de a dos $=\tfrac14$ $\checkmark$, pero $P(A\cap B\cap C)=\tfrac14\neq\tfrac18$ (conociendo dos, el tercero queda determinado).
+  \item Terminología de Bayes: $P(A)$ \emph{prior}, $P(B\mid A)$ \emph{verosimilitud}, $P(A\mid B)$ \emph{posterior}, $P(B)$ \emph{evidencia}.
+\end{itemize}
+
+\subsection{Media, desvío y normal}
+\begin{formula}[Normal]
+$\displaystyle X\sim\mathcal N(\mu,\sigma^2):\ f(x)=\frac{1}{\sigma\sqrt{2\pi}}\exp\!\Big(-\frac{(x-\mu)^2}{2\sigma^2}\Big)$, \quad $z=\dfrac{x-\mu}{\sigma}$
+\end{formula}
+\begin{itemize}
+  \item \textbf{Media} $\mu=\E[X]$: centro de masa. \textbf{Desvío} $\sigma=\sqrt{\E[(X-\mu)^2]}$: dispersión típica alrededor de la media, \emph{en las mismas unidades que $X$} (la varianza está en unidades$^2$).
+  \item \textbf{Regla 68–95–99.7}: $P(|X-\mu|\le k\sigma)\approx 0.68,\ 0.95,\ 0.997$ para $k=1,2,3$. Solo vale si se \emph{supone normalidad}; sin suponerla, Chebyshev: $P(|X-\mu|\ge k\sigma)\le 1/k^2$.
+\end{itemize}
+\begin{ejemplo}
+\ej Caramelos con $\mu=5$, $\sigma=0.05$; defectuoso fuera de $[4.95,5.05]=\mu\pm1\sigma$ $\Rightarrow$ bajo normalidad $\approx 32\%$ defectuosos (mala calidad). \trap el enunciado dice ``$0.05\,\text{cm}^2$'': si fuera la \emph{varianza}, $\sigma\approx0.224$ y el porcentaje sería muchísimo mayor.
+
+\ej Bayes con verosimilitudes continuas (tornillos): $P(B\mid x)=\dfrac{f_B(x)P(B)}{f_A(x)P(A)+f_B(x)P(B)}$. Con $x=10.2$, $A\sim\mathcal N(10,0.5^2)$, $B\sim\mathcal N(10.5,0.7^2)$ y priors iguales (supuesto!): $f_A\approx0.737$, $f_B\approx0.520\Rightarrow P(B\mid x)\approx0.41$.
+\end{ejemplo}
+
+\subsection{Máxima verosimilitud (MLE)}
+\begin{formula}[Bernoulli]
+$k$ caras en $n$ tiros: $\ \mathcal L(p)=p^k(1-p)^{n-k}$,\quad $\ell(p)=k\log p+(n-k)\log(1-p)$,\quad $\ell'(p)=0\Rightarrow \hat p_{MLE}=\dfrac{k}{n}$
+\end{formula}
+Pasos: (1) escribir la verosimilitud de los datos (i.i.d. $\Rightarrow$ producto), (2) tomar log (misma argmax, suma en vez de producto), (3) derivar e igualar a 0, (4) verificar que es máximo ($\ell''<0$).
+\begin{ejemplo}
+\ej HHHTHTTHHT ($k=6,\ n=10$). Moneda justa: $0.5^{10}\approx 9.77\times10^{-4}$. Cargada $p=0.7$: $0.7^6\,0.3^4\approx 9.53\times10^{-4}$ $\Rightarrow$ la justa es (apenas) más verosímil. MLE: $\hat p=0.6$.
+\end{ejemplo}
+
+%=====================================================================
+\section{Introducción: tipos de problemas, hipótesis, sesgo inductivo}\guia{2}
+
+\subsection{Tipos de problema}
+\begin{itemize}
+  \item \textbf{Supervisado}: hay etiqueta $y$ (discurso de odio, fraude). \textbf{No supervisado}: sin etiqueta, buscar estructura (agrupar voces). Segmentación de imágenes: suele ser supervisado (máscaras anotadas) — justificar.
+  \item \textbf{Clasificación}: $y$ en un conjunto finito (\texttt{bool}, \texttt{enum}/categórico). \textbf{Regresión}: $y\in\mathbb R$ (\texttt{float}).
+  \item Casos borde: \emph{predecir una probabilidad} $\to$ si las etiquetas anotadas son de clase, es clasificación (el modelo devuelve $P(y\mid x)$); si se anotó un número en $[0,1]$, regresión. Nota $0..10$: ordinal — puede plantearse como clasificación multiclase o regresión (entero). ``Dónde vive'': categórica (barrio) o regresión 2D (lat, long). Próxima palabra: clasificación multiclase con $|V|$ clases. Subconjunto de objetos: \textbf{multi-etiqueta} (vector de \texttt{bool}).
+  \item Métrica y dataset: siempre justificar (p.ej. fraude $\to$ recall/F1/AUC-PR por desbalance, no accuracy).
+\end{itemize}
+
+\subsection{Espacio de instancias y de hipótesis}
+\begin{formula}[Conteos]
+$\displaystyle |X|=\prod_{j=1}^{p}|\text{Dom}(A_j)| \qquad |H_{\text{todas}}|=|Y|^{|X|}$
+\end{formula}
+\begin{ejemplo}
+\ej Color (4) $\times$ Tamaño (2): $|X|=8$, todas las funciones $X\to\{A,B\}$: $2^8=256$. Sesgo ``Si Color=rojo entonces $A$ si no $B$'' o su inversa: $|H|=2$. Si permito ``Color $=c$'' para cualquiera de los 4 colores y 2 orientaciones: $|H|=8$.
+\end{ejemplo}
+\textbf{Parámetros mínimos} de una hipótesis: recta con orientación $w_1x_1+w_2x_2+b\ge0$: 3 números pero hay 1 grado de libertad de escala $\Rightarrow$ 2 continuos + el signo/dirección. Dos rectas paralelas a un eje: 2 umbrales + 1 bit (horizontal/vertical). Elipse general: 5 parámetros (centro 2, semiejes 2, ángulo 1) $\Rightarrow$ 3 elipses = 15.
+
+\subsection{Aprendizaje de conceptos (Mitchell cap.\,1–2)}
+\begin{itemize}
+  \item \textbf{Consistencia}: $h$ consistente con $D$ si $h(x)=c(x)\ \forall\langle x,c(x)\rangle\in D$.
+  \item \textbf{Version space}: $VS_{H,D}=\{h\in H: \text{consistente}(h,D)\}$, representado por las fronteras $S$ (más específicas) y $G$ (más generales).
+  \item \textbf{Find-S}: arranca en la hipótesis más específica y generaliza lo mínimo con cada positivo (ignora negativos). \textbf{Candidate-Elimination}: mantiene $S$ y $G$ usando positivos y negativos.
+  \item \textbf{Hipótesis de aprendizaje inductivo}: una $h$ que aproxima bien $c$ en muchos datos de entrenamiento lo hará también en datos no vistos.
+\end{itemize}
+\begin{formula}[Sesgo inductivo]
+Conjunto mínimo de supuestos $B$ tal que $(\forall x\in X)\,[(B\wedge D\wedge x)\vdash L(x,D)]$. Sin sesgo inductivo \textbf{no hay generalización}.
+\end{formula}
+\begin{itemize}
+  \item \textbf{Sesgo de restricción (lenguaje)}: se limita $H$ (ej. solo rectas). \textbf{Sesgo de preferencia (búsqueda)}: $H$ completo pero se prefieren ciertas hipótesis (ej. árboles cortos, Occam).
+  \item \textbf{Algoritmo para separar con una recta} (datos lin. separables): Perceptrón — $w\leftarrow w+\eta\,y_i x_i$ ante cada error; converge si hay separabilidad, pero no elige ``la mejor'' recta. ``Mejor'' respecto al \emph{margen} $\Rightarrow$ SVM. Si no son separables: perceptrón no converge $\to$ minimizar una pérdida (logística, hinge) o margen blando.
+\end{itemize}
+
+\subsection{Entropía e información}
+\begin{formula}[Sorpresa y entropía]
+$\displaystyle I(x)=-\log_2 p(x)=\log_2\frac1{p(x)}\qquad H(X)=\sum_x p(x)\log_2\frac1{p(x)}=\E[I(X)]$
+\end{formula}
+\begin{itemize}
+  \item $0\le H\le \log_2 K$ ($K$ resultados); máxima con uniforme; $0$ si un resultado tiene prob.\ 1. Convención $0\log0=0$.
+  \item Evento con $p\to0$: sorpresa $\to\infty$, pero su aporte a la entropía $p\log\frac1p\to0$.
+  \item Binaria: $H(p)=-p\log_2p-(1-p)\log_2(1-p)$; $H(0.5)=1$.
+\end{itemize}
+\begin{ejemplo}
+\ej Dado justo: sorpresa de un 5 $=\log_2 6\approx2.585$ bits $=H$. Dado cargado $(0.5,0.1,\dots,0.1)$: $H=0.5\cdot1+5\cdot0.1\cdot3.32\approx2.16$ bits $<2.585$ $\Rightarrow$ \textbf{menos} incertidumbre.
+
+\ej Región: 12 puntos (5A,7B): $H\approx0.980$. Corte $x_1<0$: izq.\ (3A,2B) $H=0.971$, der.\ (2A,5B) $H=0.863$; ponderada $\tfrac5{12}0.971+\tfrac7{12}0.863\approx0.908$ $\Rightarrow$ ganancia $0.072$. Corte $x_2<0$: (3,3) $H=1$, (2,4) $H=0.918$ $\Rightarrow$ ponderada $0.959$, ganancia $0.021$ $\Rightarrow$ peor corte.
+\end{ejemplo}
+
+%=====================================================================
+\section{Árboles de decisión}\guia{3}
+
+\subsection{Medidas de impureza y ganancia}
+\begin{formula}[Impureza de un nodo $S$ con proporciones $p_k$]
+\begin{tabular}{@{}ll@{}}
+Entropía: & $H(S)=-\sum_k p_k\log_2p_k$\\
+Gini: & $G(S)=1-\sum_k p_k^2=\sum_k p_k(1-p_k)$ \quad (binaria: $2p(1-p)$, máx.\ $0.5$)\\
+Error de clasificación: & $E(S)=1-\max_k p_k$
+\end{tabular}
+\[
+\Delta M(S,A)=M(S)-\sum_{v}\frac{|S_v|}{|S|}M(S_v)\qquad(\text{Ganancia de información si }M=H;\ \text{ganancia Gini si }M=G)
+\]
+\end{formula}
+
+\begin{ejemplo}
+\ej \textbf{Tabla ``Salgo a caminar''} (9 Sí / 5 No): $H(S)=0.940$. Ganancias en la raíz: Cielo $0.246$, Humedad $0.151$, Viento $0.048$, Temperatura $0.029$ $\Rightarrow$ raíz = \textbf{Cielo}. Nublado es hoja pura (Sí). Rama Sol (2Sí/3No): mejor Humedad (Alta$\to$No, Normal$\to$Sí, ganancia $0.971$). Rama Lluvia (3Sí/2No): mejor Viento (Débil$\to$Sí, Fuerte$\to$No).
+\end{ejemplo}
+
+\subsection{Algoritmo (ID3 / CART)}
+\begin{itemize}
+  \item \textbf{Top-down, greedy (hill-climbing), sin backtracking}: en cada nodo elige el par $\langle a,c\rangle$ que maximiza $\Delta M$; recursión en los hijos. \textbf{No} explora todos los árboles (problema NP-hard) $\Rightarrow$ óptimo local.
+  \item \textbf{Criterios de detención}: nodo puro, sin atributos, \texttt{max\_depth}, \texttt{min\_samples\_split}, \texttt{min\_samples\_leaf}, ganancia mínima. Hoja $\to$ clase mayoritaria.
+  \item \textbf{Atributos continuos}: ordenar valores únicos $v_1<\dots<v_m$; candidatos = puntos medios $\frac{v_i+v_{i+1}}2$ (solo $m-1$; cortes entre dos valores consecutivos generan las mismas regiones, no repetirlos). Optimización: solo hace falta evaluar entre valores donde \emph{cambia la clase}.
+  \item \textbf{Probabilidades}: $\hat P(Y=k\mid x)=$ proporción de la clase $k$ entre las instancias de entrenamiento de la hoja donde cae $x$.
+\end{itemize}
+\begin{formula}[mejor\_corte($S,A,\Delta M$) — pseudocódigo]
+\texttt{best=None; g*=-inf}\\
+\texttt{for a in A:}\\
+\texttt{\ \ vals = sorted(set(S[a]))}\\
+\texttt{\ \ for i in range(len(vals)-1):}\\
+\texttt{\ \ \ \ c = (vals[i]+vals[i+1])/2;\ g = $\Delta$M(S,(a,c))}\\
+\texttt{\ \ \ \ if g > g*: g*, best = g, (a,c)}\\
+\texttt{return best, g*}
+\end{formula}
+
+\subsection{Importancia de atributos}
+\begin{formula}[Disminución media de la impureza (MDI)]
+$\displaystyle \text{Imp}(a)=\sum_{t\,:\,\text{nodo que corta por }a}\frac{N_t}{N}\,\Delta M(t)$, \quad luego normalizar: $\dfrac{\text{Imp}(a)}{\sum_{a'}\text{Imp}(a')}\in[0,1]$.
+\end{formula}
+Para calcularla en el algoritmo: acumular en un diccionario \texttt{imp[a] += N\_t/N * g} cada vez que se elige un corte, y normalizar al final.
+\begin{formula}[Importancia por permutación (modelo genérico $M$)]
+1) Medir la métrica en validación: $s_0$. 2) Para cada atributo $j$: permutar al azar la columna $j$ (rompe su relación con $y$ conservando su distribución), re-evaluar $\to s_j$ (repetir varias veces y promediar). 3) $\text{Imp}(j)=s_0-s_j$. No requiere reentrenar.
+\end{formula}
+\begin{trampa}
+\trap \textbf{Atributos correlacionados}: en MDI el árbol elige uno de ellos y el otro queda con importancia baja (o se reparten arbitrariamente). En permutación, al permutar uno el modelo ``usa'' el otro $\Rightarrow$ ambos aparecen \emph{menos} importantes de lo que son. MDI además está sesgado a favor de atributos de alta cardinalidad/continuos y se calcula sobre train.
+\end{trampa}
+
+\subsection{Propiedades y fronteras}
+\begin{itemize}
+  \item Fronteras = \textbf{rectángulos alineados a los ejes} (cortes perpendiculares). Un árbol de altura $h$ tiene a lo sumo $2^h$ hojas/regiones. Para decidir si una partición la genera un árbol: debe poder obtenerse con cortes recursivos que atraviesan \emph{toda} la región actual (partición jerárquica).
+  \item \textbf{Invariantes a transformaciones monótonas} de cada atributo (m$^2\to$km$^2$, log): mismo árbol, umbrales reescalados $\Rightarrow$ no hace falta escalar.
+  \item Nuevo atributo $x_3=x+y$: cortes $x+y\le c$ $\Rightarrow$ fronteras \textbf{oblicuas} (diagonales a $-45^\circ$) en el plano original. Para graficar: armar grilla en $(x,y)$, calcular $x_3$ para cada punto, predecir y colorear.
+  \item \textbf{Alta varianza / inestables}: cambiar pocas etiquetas (ruido 10\%) puede cambiar el corte de la raíz y todo el árbol.
+  \item \textbf{Altura real acotada}: árbol balanceado con hojas de $\ge1$ instancia $\Rightarrow$ altura $\le\lceil\log_2 n\rceil$. Con $n=1000$ no tiene sentido probar \texttt{max\_depth}$\gg 10$. Además depende de: nodos puros antes, \texttt{min\_samples\_leaf}, instancias duplicadas/contradictorias, cantidad de valores distintos.
+\end{itemize}
+\begin{trampa}
+\textbf{V/F clásicos:}
+(a) ``el objetivo es el árbol mínimo con hojas puras'' $\to$ F (el objetivo es generalizar; hojas puras sobreajustan).
+(b) ``explora todos los árboles'' $\to$ F (greedy).
+(c) ``un atributo aparece una sola vez por rama'' $\to$ F para continuos (puede re-cortarse con otro umbral); V en ID3 con categóricos.
+(d) ``un par $\langle a,c\rangle$ aparece una sola vez por rama'' $\to$ V (repetirlo no divide nada).
+(e) ``siempre 100\% en train'' $\to$ F: (f) solo si no hay instancias idénticas con etiquetas distintas $\to$ V.
+\end{trampa}
+\textbf{Sesgo inductivo de ID3}: preferencia (no restricción) por árboles \textbf{cortos} y con atributos de \textbf{mayor ganancia cerca de la raíz}. Desempates: la regla elegida (primer atributo, azar) \emph{también} es parte del sesgo.
+
+\textbf{Poda}: pre-poda (detener antes) o post-poda (\emph{reduced-error pruning} con validación; \emph{rule post-pruning}).
+
+%=====================================================================
+\section{Selección de modelos, validación cruzada y Control}\guia{4}
+
+\subsection{Esquema Desarrollo / Control}
+\begin{center}
+\begin{tikzpicture}[font=\small,every node/.style={draw=none}]
+\fill[accent!20] (0,0) rectangle (9,0.6); \node at (4.5,0.3) {\textbf{Desarrollo} (train + validación vía K-fold)};
+\fill[warn!25] (9,0) rectangle (12,0.6); \node at (10.5,0.3) {\textbf{Control} (test)};
+\foreach \i in {0,...,4} {\draw[white,line width=1pt] (\i*1.8,0.6) -- (\i*1.8,0);}
+\end{tikzpicture}
+\end{center}
+\begin{itemize}
+  \item \textbf{Control} se separa \emph{al principio}, se usa \textbf{una sola vez} al final para estimar performance en datos nuevos. Si se usa para decidir, deja de ser insesgado.
+  \item \textbf{K-fold CV}: partir Desarrollo en $K$ folds disjuntos; entrenar $K$ modelos, cada uno con $K-1$ folds, validar en el restante; reportar media (y desvío). Los \emph{conjuntos de validación} son disjuntos; los de \emph{entrenamiento} se solapan.
+  \item Variantes: \textbf{estratificado} (mantiene proporción de clases), \textbf{LOO} ($K=N$: poco sesgo pero alta varianza y costoso; los modelos \emph{no} son independientes, comparten casi todos los datos), \textbf{GroupKFold} (un grupo entero en un solo fold: pacientes, hablantes, usuarios), \textbf{temporal} (entrenar en pasado, validar en futuro).
+  \item \textbf{No partir al azar} cuando: hay grupos (mismo paciente/hablante en train y val $\Rightarrow$ optimista), series temporales (no ver el futuro), clases muy desbalanceadas (estratificar), duplicados o datos de la misma fuente/sesión.
+  \item Tras elegir la configuración: \textbf{reentrenar con todo Desarrollo} y evaluar una vez en Control. \emph{No} incluir Control en la CV.
+\end{itemize}
+
+\begin{formula}[Pseudocódigo]
+\texttt{GRID\_SEARCH(X, D, M):}\ \ \texttt{best=(None,None,-inf)}\\
+\texttt{\ \ for (A,HS) in X:\ \ s = CROSS\_VAL(A,HS,D,M);\ if s>best[2]: best=(A,HS,s)}\\
+\texttt{\ \ return best}\\[3pt]
+\texttt{CROSS\_VAL(A,HS,D,M,K=5):}\ \ \texttt{folds = partir(shuffle(D), K)}\ (estratificado)\\
+\texttt{\ \ for k in 1..K:\ \ m = entrenar(A,HS, D$\setminus$folds[k]);\ s[k]=M(m, folds[k])}\\
+\texttt{\ \ return mean(s)}\\[3pt]
+\texttt{RANDOM\_SEARCH(X,D,M,N):}\ para cada $(A,HS)$, repetir $N$ veces: \texttt{hs=\{k:SAMPLE(v) for k,v in HS\}}, evaluar con \texttt{CROSS\_VAL}, quedarse con el mejor.\\[3pt]
+\texttt{GROUP\_K\_CROSS\_VAL}: particionar \textbf{los grupos} (no las instancias) en $K$ folds; fold$_k$ = instancias cuyos grupos cayeron en $k$. Si hay más folds que grupos $\Rightarrow$ $K\le|G|$ (usar leave-one-group-out). Si un grupo tiene el 60\%: folds muy desbalanceados; en esa iteración se entrena con solo el 40\% y la estimación tiene alta varianza.
+\end{formula}
+
+\subsection{Optimismo y fugas de información (leakage)}
+\begin{trampa}
+\begin{itemize}
+  \item \textbf{Elegir el máximo entre miles de configuraciones} sobre los mismos folds es optimista (``maldición del ganador'': suerte en esos datos/semillas; usamos la validación para decidir) $\Rightarrow$ evaluar en Control. Respuestas correctas en 4.5: (b), (d), (e).
+  \item CV \textbf{no evita} el overfitting; solo lo \emph{estima/detecta} mejor.
+  \item Control \textbf{no} es siempre peor que Desarrollo (puede ser mejor por azar), pero \emph{se espera} que sea algo peor.
+  \item \textbf{Todo lo que ``aprende'' de los datos} (medias para imputar, escaladores, selección de atributos por correlación con $y$, oversampling, target encoding) se ajusta \textbf{solo con el train de cada fold} y se aplica a val. Si no $\Rightarrow$ subestimación del error.
+  \item \textbf{Oversampling}: la opción segura es (III): dentro de cada iteración, solo a los folds de entrenamiento. Antes de partir: copias casi idénticas en train y val/control $\Rightarrow$ performance sobreestimada. En validación: distorsiona la distribución real $\Rightarrow$ métrica no representativa.
+\end{itemize}
+\end{trampa}
+\textbf{Orden del proceso (4.7)}: definir métrica y mirar datos/distribución de etiquetas (g, h, l) $\to$ partir Desarrollo–Control (b) $\to$ baseline (n) $\to$ \emph{[loop]} partir en folds (d); dentro de cada fold: imputar con media del train (m), seleccionar top-10 atributos con train (e), entrenar; grilla (j), análisis de errores (f), agregar configs (k) $\to$ entrenar modelo final con todo Desarrollo y exportar (c) $\to$ evaluar \textbf{una vez} en Control $\to$ reporte (a). Empezar de nuevo (i) tras mirar Control ``quema'' el Control.
+
+\subsection{Métrica global vs.\ promedio de folds}
+\begin{formula}[Métricas aditivas]
+$\displaystyle M(D)=\frac1N\sum_{i}\ell_i=\sum_{k=1}^{K}\frac{n_k}{N}\,M_k$ \quad (Accuracy, MSE). Si $n_k=N/K$: $=\frac1K\sum_k M_k$ (promedio simple).
+\end{formula}
+Con folds de distinto tamaño hay que \textbf{ponderar por $n_k/N$}. RMSE no es aditiva: por Jensen ($\sqrt{\cdot}$ cóncava) $\frac1K\sum_k\sqrt{MSE_k}\le\sqrt{\frac1K\sum_k MSE_k}$ $\Rightarrow$ promedio de RMSE locales $\le$ RMSE global. Contraejemplo: fold 1 errores $0,0$ (RMSE 0), fold 2 errores $2,2$ (RMSE 2): promedio $1$, global $\sqrt{2}\approx1.41$.
+
+%=====================================================================
+\section{Clasificadores}\guia{5}
+
+\subsection{Clasificador óptimo de Bayes}
+\begin{formula}[Regla de Bayes]
+\[\hat y(x)=\argmax_c P(Y=c\mid X=x)=\argmax_c \frac{P(X=x\mid Y=c)P(Y=c)}{P(X=x)}\]\[\hat y(x)=\argmax_c P(X=x\mid Y=c)\,P(Y=c)\]
+\end{formula}
+\begin{itemize}
+  \item Minimiza el error esperado (0-1); su error es el \textbf{error de Bayes} (irreducible). En la práctica no se construye porque \textbf{no conocemos} $P(X\mid Y)$ ni $P(Y)$: hay que estimarlas (y en alta dimensión es imposible sin supuestos).
+  \item \textbf{Qué alcanza para decidir} (binario): $P(Y=1\mid x)$ sola $\checkmark$ (la otra es $1-$ella). $P(x\mid Y=1)$ y $P(x\mid Y=0)$ sin priors $\times$ (salvo priors iguales). $P(x\mid Y=1)$ y $P(Y=0)$ $\times$ (falta $P(x\mid Y=0)$). $P(x)$ sola, o solo priors $\times$ (los priors solo dan la clase mayoritaria, ignorando $x$).
+  \item \textbf{Frontera en una grilla}: para cada punto $x$ de la grilla calcular $P(x\mid c)P(c)$ para cada clase, asignar el argmax, colorear; la frontera es donde cambia el argmax.
+\end{itemize}
+\begin{ejemplo}
+\ej Verde $\sim\mathcal N(0,2^2)$, $\pi_V=0.2$; Azul $\sim\mathcal N(3,1)$, $\pi_A=0.8$; $x=2$: $f_V(2)\pi_V=0.121\cdot0.2=0.024$; $f_A(2)\pi_A=0.242\cdot0.8=0.194$ $\Rightarrow$ \textbf{Azul}.
+\end{ejemplo}
+
+\subsection{Generativos vs.\ discriminativos}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+& \textbf{Generativo} & \textbf{Discriminativo}\\\midrule
+Modela & $P(X\mid Y)$ y $P(Y)$ (cómo se generan los datos) & $P(Y\mid X)$ o directamente la frontera\\
+Ejemplos & Naive Bayes, LDA, QDA & Regresión logística, SVM, árboles, KNN\\
+Pros & pocos datos, puede generar muestras, maneja faltantes & suele ser más preciso con muchos datos, menos supuestos\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{KNN}
+\begin{itemize}
+  \item Predice la clase mayoritaria (o promedio en regresión) de los $K$ vecinos más cercanos según una distancia (euclídea $\sqrt{\sum_j(x_j-x'_j)^2}$, Manhattan, etc.). No paramétrico, \emph{lazy} (no entrena).
+  \item $K=1$: frontera muy irregular (celdas de Voronoi), 100\% en train, \textbf{overfitting}/alta varianza. $K=n$: predice siempre la clase mayoritaria (frontera inexistente: todo el plano de una clase), \textbf{underfitting}/alto sesgo.
+  \item \textbf{Escalar es obligatorio}: altura en metros ($\sim$1.5–2.1) vs.\ edad en años ($\sim$0–90) $\Rightarrow$ la edad domina la distancia. Estandarizar o min-max. Categóricas $\to$ one-hot.
+\end{itemize}
+\begin{formula}[Maldición de la dimensión]
+Fracción usada con un 10\% por eje: $0.1^p$ ($p=1$: 10\%, $p=2$: 1\%, $p=100$: $10^{-98}$\%). Lado del hipercubo que contiene el 10\% de los datos: $\ell=0.1^{1/p}$ ($p=1$: $0.1$; $p=2$: $0.316$; $p=100$: $0.977$) $\Rightarrow$ en alta dimensión los ``vecinos'' ya no son cercanos.
+\end{formula}
+
+\subsection{LDA y QDA}
+Supuestos LDA: $X\mid Y=c\sim\mathcal N(\mu_c,\Sigma)$ con \textbf{covarianza común} a todas las clases; priors $\pi_c$.
+\begin{formula}[Función discriminante ($p=1$)]
+$\displaystyle \delta_c(x)=x\frac{\mu_c}{\sigma^2}-\frac{\mu_c^2}{2\sigma^2}+\log\pi_c$ \qquad
+\textbf{Multivariada:} $\delta_c(x)=x^\top\Sigma^{-1}\mu_c-\tfrac12\mu_c^\top\Sigma^{-1}\mu_c+\log\pi_c$
+\end{formula}
+\textbf{Derivación}: $\argmax_c P(c\mid x)=\argmax_c \pi_c f_c(x)=\argmax_c \log\pi_c+\log f_c(x)$. Con $\log f_c(x)=-\log(\sigma\sqrt{2\pi})-\frac{x^2}{2\sigma^2}+\frac{x\mu_c}{\sigma^2}-\frac{\mu_c^2}{2\sigma^2}$, los términos $-\log(\sigma\sqrt{2\pi})$ y $-\frac{x^2}{2\sigma^2}$ \textbf{no dependen de $c$} (porque $\sigma$ es común) y se descartan.
+
+\textbf{Frontera $k=2$}: $\delta_1=\delta_2 \Rightarrow x^*=\dfrac{\mu_1+\mu_2}{2}+\dfrac{\sigma^2}{\mu_1-\mu_2}\log\dfrac{\pi_2}{\pi_1}$; si $\pi_1=\pi_2$: $x^*=\frac{\mu_1+\mu_2}2$. Un prior mayor \emph{corre la frontera hacia la otra clase} (agranda su región).
+
+\textbf{QDA}: $\Sigma_c$ distinta por clase $\Rightarrow$ el término $-\frac{x^2}{2\sigma_c^2}$ ya no se cancela:
+$\delta_c(x)=-\tfrac12\log|\Sigma_c|-\tfrac12(x-\mu_c)^\top\Sigma_c^{-1}(x-\mu_c)+\log\pi_c$ $\Rightarrow$ frontera \textbf{cuadrática}.
+
+\subsection{Naive Bayes}
+\begin{formula}[Gaussian NB]
+$\displaystyle \hat y=\argmax_c P(Y=c)\prod_{j=1}^p P(X_j=x_j\mid Y=c)\ \approx\ \argmax_c \hat\pi_c\prod_{j=1}^p f_{\mathcal N}(x_j;\hat\mu_{c,j},\hat\sigma_{j})$
+\end{formula}
+\textbf{Sesgo inductivo} (los dos $\approx$): (1) \textbf{independencia condicional} de los atributos dada la clase; (2) cada $X_j\mid Y$ es \textbf{normal}, con media por clase y atributo $\hat\mu_{c,j}$ y (en la fórmula de la guía) desvío $\hat\sigma_j$ que depende solo del atributo, \emph{compartido entre clases}. También: los priors se estiman con frecuencias. Categóricos: $P(x_j\mid c)=\frac{\#(x_j,c)+1}{\#c+|V_j|}$ (suavizado de Laplace). En la práctica: usar sumas de logs.
+
+\subsection{Regresión logística}
+\begin{formula}[Modelo]
+$\displaystyle P(Y=1\mid x)=\sigma(w^\top x+b)=\frac{1}{1+e^{-(w^\top x+b)}}$,\quad $\log\frac{p}{1-p}=w^\top x+b$ (log-odds lineal)\\[2pt]
+Pérdida (log-loss / cross-entropy): $\displaystyle \mathcal L=-\frac1N\sum_i\big[y_i\log\hat p_i+(1-y_i)\log(1-\hat p_i)\big]$, se minimiza con descenso por gradiente ($\nabla=\frac1N\sum_i(\hat p_i-y_i)x_i$).
+\end{formula}
+Frontera \textbf{lineal} ($w^\top x+b=0$ con umbral 0.5). Discriminativo; salida probabilística; con regularización $L_2$ ($C$ en sklearn $=1/\lambda$).
+
+\subsection{SVM}
+\begin{formula}[Margen máximo]
+Hard margin: $\displaystyle \min_{w,b}\tfrac12\|w\|^2$ s.a. $y_i(w^\top x_i+b)\ge1$ (margen $=2/\|w\|$).\\
+Soft margin: $\displaystyle \min\tfrac12\|w\|^2+C\sum_i\xi_i$, \ $y_i(w^\top x_i+b)\ge1-\xi_i$, $\xi_i\ge0$ \ (hinge: $\max(0,1-y_if(x_i))$).
+\end{formula}
+\begin{itemize}
+  \item \textbf{Vectores de soporte}: puntos sobre el margen o dentro; solo ellos definen la frontera.
+  \item $C$ grande: poco error de train, margen chico (varianza $\uparrow$). $C$ chico: margen ancho, más errores (sesgo $\uparrow$).
+  \item \textbf{Kernel trick}: reemplazar $x^\top x'$ por $K(x,x')=\phi(x)^\top\phi(x')$ $\Rightarrow$ separador lineal en un espacio transformado. Polinomial $(x^\top x'+c)^d$; RBF $\exp(-\gamma\|x-x'\|^2)$ ($\gamma$ grande $\Rightarrow$ frontera más curva).
+  \item Clases concéntricas (círculo dentro de anillo): ninguna recta las separa; con $\phi(x)=(x_1,x_2,x_1^2+x_2^2)$ o kernel RBF/polinomial de grado 2 se separan con un plano.
+\end{itemize}
+
+\subsection{Fronteras de decisión típicas}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Overfitting & frontera muy irregular que rodea puntos individuales / ruido\\
+Underfitting & frontera demasiado simple (ej. recta para datos curvos, o todo una clase)\\
+Árbol altura 3 & $\le 8$ rectángulos alineados a los ejes, cortes jerárquicos\\
+KNN $K=1$ / $K=n$ & mosaico de Voronoi / todo el plano de la clase mayoritaria\\
+LDA / Logística / SVM lineal & una recta (hiperplano); en LDA desplazada hacia la clase de menor prior\\
+QDA & cónicas (elipses, parábolas, hipérbolas)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+%=====================================================================
+\section{Métricas}\guia{6}
+
+\subsection{Regresión}
+\begin{formula}[]
+\[MAE=\frac1n\sum_i|y_i-\hat y_i|\qquad MSE=\frac1n\sum_i(y_i-\hat y_i)^2\qquad RMSE=\sqrt{MSE}\]\[R^2=1-\frac{\sum_i(y_i-\hat y_i)^2}{\sum_i(y_i-\bar y)^2}\qquad MAPE=\frac{100\%}{n}\sum_i\frac{|y_i-\hat y_i|}{|y_i|}\]
+\end{formula}
+\begin{itemize}
+  \item Transformación $y\to ay+b$, $\hat y\to a\hat y+b$ ($a>0$): $MAE\to a\,MAE$, $MSE\to a^2MSE$ ($b$ se cancela), $R^2$ \textbf{invariante}.
+  \item $R^2=1$: predicción perfecta. $R^2=0$: tan bueno como predecir siempre $\bar y$. $R^2<0$: peor que predecir la media. Ventaja: adimensional, comparable entre problemas con distintas unidades. Desventaja: no dice el tamaño del error en unidades reales, depende de la varianza de $y$ en el dataset.
+  \item MSE penaliza más los errores grandes (sensible a outliers); MAE más robusto.
+  \item \textbf{MAPE}: se indefine/explota con $y_i\approx0$. Asimétrico con $y=100$: predecir 0 $\to$ 100\%; 200 $\to$ 100\%; 300 $\to$ 200\%. Subestimar está acotado a 100\%, sobreestimar no $\Rightarrow$ empuja a \textbf{subestimar}.
+\end{itemize}
+
+\subsection{Matriz de confusión y métricas de umbral fijo}
+\begin{center}\small
+\begin{tabular}{@{}l|cc@{}}
+& Pred.\ + & Pred.\ $-$\\\hline
+Real + & TP & FN\\
+Real $-$ & FP & TN\\
+\end{tabular}
+\end{center}
+Clase \textbf{positiva}: la que queremos detectar / la de interés (spam, fraude, enfermo). Perros vs.\ gatos: es arbitrario $\Rightarrow$ la métrica cambia según cuál se elija.
+\begin{formula}[]
+{\renewcommand{\arraystretch}{2.1}\begin{tabular}{@{}l@{\quad}l@{\qquad\qquad}l@{\quad}l@{}}
+Accuracy & $\dfrac{TP+TN}{N}$ & Precision & $\dfrac{TP}{TP+FP}$\\
+Recall = TPR = sensibilidad & $\dfrac{TP}{TP+FN}$ & Especificidad = TNR & $\dfrac{TN}{TN+FP}$\\
+FPR & $\dfrac{FP}{FP+TN}=1-TNR$ & Balanced acc. & $\dfrac12\big(TPR+TNR\big)$
+\end{tabular}}
+\[F_\beta=(1+\beta^2)\frac{P\cdot R}{\beta^2P+R}=\frac{(1+\beta^2)TP}{(1+\beta^2)TP+\beta^2FN+FP}\qquad F_1=\frac{2TP}{2TP+FN+FP}\]
+\end{formula}
+\textbf{Demostración} $F_\beta$: sustituir $P=\frac{TP}{TP+FP}$, $R=\frac{TP}{TP+FN}$; numerador $(1+\beta^2)\frac{TP^2}{(TP+FP)(TP+FN)}$, denominador $\frac{\beta^2TP(TP+FN)+TP(TP+FP)}{(TP+FP)(TP+FN)}$; simplificar un $TP$. $\beta>1$ favorece recall, $\beta<1$ favorece precision.
+\begin{itemize}
+  \item \textbf{TN no aparece} en $F_\beta$, precision ni recall: agregar 90.000 legítimos bien clasificados no cambia $F_1$ $\Rightarrow$ no captura la capacidad de descartar negativos; comparar entre poblaciones con distinta prevalencia es engañoso.
+  \item \textbf{Accuracy con desbalance}: 99\% negativos $\Rightarrow$ clasificador constante ``$-$'' logra 99\% y no detecta nada.
+  \item \textbf{Balanced accuracy} $=\frac1N\big[\frac{TP}{2p}+\frac{TN}{2(1-p)}\big]$ con $Np=TP+FN$ $\Rightarrow=\frac12(TPR+TNR)\in[0,1]$. Clasificador constante (cualquier clase) $\Rightarrow0.5$.
+  \item \textbf{FN más grave que FP}: diagnóstico de cáncer, fraude. \textbf{FP más grave}: spam (perder un mail real) $\Rightarrow$ priorizar \textbf{precision} o $F_\beta$ con $\beta<1$ (este último es mejor: no ignora totalmente el recall). AUC-ROC no fija umbral, no sirve para esto.
+\end{itemize}
+
+\subsection{Umbral, ROC y PR}
+Score $s(x)$ (probabilidad, distancia al hiperplano, logit); predecir $+$ si $s(x)\ge\theta$. Cada umbral $\to$ una matriz de confusión; hay \textbf{finitas} matrices distintas (a lo sumo $N+1$), no infinitas.
+\begin{itemize}
+  \item \textbf{Recall es no creciente en $\theta$}: si $\theta_1>\theta_2$, $\{s\ge\theta_1\}\subseteq\{s\ge\theta_2\}$ $\Rightarrow$ $TP(\theta_1)\le TP(\theta_2)$ y el denominador $TP+FN=\#$positivos es constante.
+  \item \textbf{Precision no es monótona}: scores ordenados (mayor a menor) con etiquetas $+,-,+$. $\theta$ alto (solo el 1ro): $P=1$; bajando (2 primeros): $P=0.5$; bajando (3): $P=0.67$. Subir el umbral \emph{no siempre} sube la precision.
+  \item \textbf{ROC}: TPR vs.\ FPR para todos los umbrales. \textbf{PR}: precision vs.\ recall. La ROC \textbf{no usa precision}.
+  \item \textbf{AUC-ROC} $=P(s(x^+)>s(x^-))$: probabilidad de rankear bien un par positivo–negativo. 0.5 = azar, 1 = perfecto. Invariante al umbral y a \textbf{cualquier transformación monótona creciente} de los scores (solo importa el orden) $\Rightarrow$ \textbf{no distingue} un modelo confiado de uno poco confiado con el mismo orden (no mide calibración).
+  \item Con desbalance fuerte, AUC-PR es más informativa que AUC-ROC.
+  \item $F_1$ de dos modelos se cruza al cambiar umbral: $F_1$ depende del umbral y de la calibración de los scores; un modelo puede tener scores ``corridos''. Con dos puntos no podemos concluir nada sobre el AUC-PR (resume todos los umbrales).
+\end{itemize}
+\begin{formula}[CURVA-ROC(labels, scores)]
+\texttt{P = \#True; N = \#False; tp = fp = 0; out = [(+inf, 0, 0)]}\\
+\texttt{for (s, y) in sorted(zip(scores,labels), desc):}\\
+\texttt{\ \ if y: tp += 1 else: fp += 1}\\
+\texttt{\ \ if es el último con este score: out.append((s, fp/N, tp/P))}\ \ (empates juntos)\\
+\texttt{return out}\qquad AUC = área por trapecios.
+\end{formula}
+
+\subsection{Multiclase y costos}
+\begin{itemize}
+  \item \texttt{average} en sklearn: \textbf{binary} (solo la clase positiva), \textbf{macro} (promedio simple por clase, todas pesan igual), \textbf{weighted} (ponderado por soporte), \textbf{micro} (suma global de TP/FP/FN; en multiclase single-label = accuracy).
+  \item $F_1$(gato) alto no implica mejor clasificador: ignora cómo se clasifican los perros (TN). Mirar ambas clases o macro-$F_1$.
+\end{itemize}
+\begin{formula}[Decisión de costo mínimo]
+$\displaystyle d^*(x)=\argmin_d \sum_y \hat P(y\mid x)\,C(y,d)$ \quad (requiere probabilidades \textbf{calibradas})
+\end{formula}
+\begin{ejemplo}
+\ej $p=P(\text{Maligno})$. Costos esperados: Ignorar $=100p$; ReChequear $=5p+15(1-p)$; Operar $=50(1-p)$.
+$p=0.3$: $30$ / $\mathbf{12}$ / $35$ $\to$ ReChequear. $p=0.99$: $99$ / $5.1$ / $\mathbf{0.5}$ $\to$ Operar. $p=0.01$: $\mathbf{1}$ / $14.9$ / $49.5$ $\to$ Ignorar.
+\end{ejemplo}
+\begin{trampa}
+\trap ``La matriz de confusión se pondera por la probabilidad'' $\to$ F (se construye con predicciones duras tras un umbral). ``Sin FP $\Rightarrow$ precision $=1$'' $\to$ V (si hay al menos un TP; si no, indefinida). ``Sin FN $\Rightarrow$ recall $=1$'' $\to$ V. ``Precision y recall ignoran los negativos'' $\to$ V en el sentido de que no usan TN (precision sí usa FP).
+\end{trampa}
+
+%=====================================================================
+\section{Sesgo y varianza}\guia{7}
+
+\begin{formula}[Descomposición (error cuadrático)]
+Supuestos: $y=f(x)+\varepsilon$, $\E[\varepsilon]=0$, $\Var(\varepsilon)=\sigma^2$, $\varepsilon$ independiente del dataset $D_n$. Sea $\bar h(x)=\E_{D_n}[\hat h_{D_n}(x)]$.
+\[\E_{D_n,\varepsilon}\big[(y-\hat h_{D_n}(x))^2\big]=\underbrace{\big(f(x)-\bar h(x)\big)^2}_{\text{Sesgo}^2}+\underbrace{\E\big[(\hat h_{D_n}(x)-\bar h(x))^2\big]}_{\text{Varianza}}+\underbrace{\sigma^2}_{\text{ruido irreducible}}\]
+\end{formula}
+\textbf{Demostración}: escribir $y-\hat h=(f-\bar h)+(\bar h-\hat h)+\varepsilon$, elevar al cuadrado y tomar esperanza. Los productos cruzados se anulan: $\E[\bar h-\hat h]=0$, $\E[\varepsilon]=0$, e independencia de $\varepsilon$ y $\hat h$.
+
+\textbf{Con error $=y-\text{pred}$ (sin cuadrado)}: $\E[y-\hat h]=f-\bar h$ = solo el sesgo; los errores positivos y negativos se cancelan, \textbf{no aparece la varianza} ni el ruido $\Rightarrow$ no sirve como medida de error.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+& \textbf{Alto sesgo (underfitting)} & \textbf{Alta varianza (overfitting)}\\\midrule
+Síntoma & error de train alto (y val alto) & train muy bueno, gran brecha con val\\
+Causa & modelo demasiado simple & modelo demasiado complejo / pocos datos\\
+Remedios & modelo más complejo, más atributos, menos regularización & \textbf{más datos}, regularizar, podar, ensambles (bagging), menos atributos\\
+\bottomrule
+\end{tabularx}
+\end{center}
+\begin{ejemplo}
+\ej Tabla 7.3 (train/val): C1 $.99/.89$ alta varianza (overfit); C2 $.90/.89$ sesgo alto relativo (si otro modelo llega a .98); C3 $.90/.75$ sesgo alto \emph{y} varianza alta; C4 $.99/.98$ el mejor. Si hasta un humano falla mucho (error de Bayes alto), C2 podría estar cerca del óptimo $\Rightarrow$ \textbf{no} diríamos sesgo alto: el sesgo se mide contra el error alcanzable. Si C1 y C2 son árboles: C1 profundo, C2 poco profundo.
+\end{ejemplo}
+\begin{trampa}
+V/F: más datos ayuda a la varianza (V), no al sesgo (F). Modelo complejo $\to$ varianza alta (V), sesgo alto (F). Sesgo alto $\leftrightarrow$ underfitting (V); varianza alta $\leftrightarrow$ overfitting (V, en general, aunque no son sinónimos exactos: sobreajuste es la brecha train–val observada; varianza es sensibilidad al dataset).
+\end{trampa}
+
+%=====================================================================
+\section{Ensambles}\guia{8}
+
+\subsection{Bagging}
+\begin{itemize}
+  \item \textbf{Bootstrap}: $B$ muestras de tamaño $n$ \textbf{con reposición}; entrenar un modelo en cada una (típicamente árboles profundos: bajo sesgo, alta varianza); agregar por \textbf{votación} (clasificación) o \textbf{promedio} (regresión).
+  \item Probabilidad de que una instancia \emph{no} esté en un bootstrap: $(1-\frac1n)^n\to e^{-1}\approx0.368$ $\Rightarrow$ cada modelo ve $\approx63.2\%$ de instancias distintas.
+  \item Reduce \textbf{varianza} sin aumentar mucho el sesgo.
+\end{itemize}
+\begin{formula}[Varianza de un promedio]
+$B$ modelos con varianza $\sigma^2$ y correlación $\rho$: $\ \Var\big(\tfrac1B\sum_b h_b\big)=\rho\sigma^2+\dfrac{1-\rho}{B}\sigma^2$ $\Rightarrow$ bajar $\rho$ reduce el piso de varianza.
+\end{formula}
+\begin{itemize}
+  \item \textbf{OOB (out-of-bag)}: para cada instancia, predecir solo con los modelos que no la vieron ($\approx B/3$) y calcular el error $\Rightarrow$ estimación de generalización sin CV. Tiende a ser algo \textbf{pesimista} (sobreestima el error) porque cada predicción usa menos modelos que el ensamble completo.
+  \item Si los submodelos votan duro y el ensamble reporta la fracción de votos: probabilidades $[0.75,0.5,0.25,0.75,1]$ son múltiplos de $1/4$ $\Rightarrow$ $B$ es múltiplo de 4 (mínimo 4; no se puede determinar exactamente).
+\end{itemize}
+
+\subsection{Random Forest (Breiman 2001)}
+\begin{itemize}
+  \item Bagging de árboles + en \textbf{cada nodo/corte} se eligen al azar $m$ de los $p$ atributos candidatos (típico $m=\sqrt p$ clasif., $p/3$ regresión) $\Rightarrow$ árboles \textbf{decorrelacionados} $\Rightarrow$ más reducción de varianza que Bagging. $m=p$ $\Rightarrow$ Bagging.
+  \item $m=1$: en cada nodo se usa un atributo elegido al azar (sin elegir el mejor atributo, solo el mejor corte); el árbol \textbf{puede} ser profundo y usar muchos atributos.
+  \item \textbf{Importancia (Breiman)}: por permutación en OOB: para cada árbol, permutar el atributo $j$ en su OOB y medir el aumento de error; promediar. \textbf{sklearn} (\texttt{feature\_importances\_}): MDI — suma de la ganancia ponderada en cada corte por $j$, promediada entre árboles ($\div B$) y normalizada. Existe \texttt{permutation\_importance} aparte.
+\end{itemize}
+\begin{trampa}
+V/F: bootstrap tiene tamaño $n$ (V, en Bagging y RF). ``En RF cada árbol usa un subconjunto de atributos'' $\to$ F: el sorteo es \textbf{por corte}, no por árbol. $m=1$ $\Rightarrow$ ``un nivel'' o ``un atributo'' $\to$ F ambas. ``Bagging reduce más varianza que RF'' $\to$ F. Importancia como suma de ganancias (f) y dividido $B$ (g): ambas son proporcionales (mismo ranking); sklearn usa el promedio normalizado. OOB estima error sin CV y tiende a \textbf{sobreestimarlo} (j) más que subestimarlo.
+\end{trampa}
+
+\subsection{Boosting}
+\textbf{Weak learner}: apenas mejor que el azar (error $<0.5$), ej.\ \emph{stumps} (árboles de 1 corte). Boosting reduce principalmente el \textbf{sesgo}; los modelos se entrenan \textbf{secuencialmente}.
+\begin{formula}[AdaBoost ($y\in\{-1,+1\}$)]
+Inicio $w_i=1/n$. Para $t=1..T$: entrenar $h_t$ con pesos $w$;\quad $\varepsilon_t=\sum_i w_i\,\mathbb 1[h_t(x_i)\ne y_i]$;\quad $\alpha_t=\tfrac12\ln\frac{1-\varepsilon_t}{\varepsilon_t}$;\\
+$w_i\leftarrow w_i\,e^{-\alpha_t y_i h_t(x_i)}$ (sube si se equivocó, baja si acertó), normalizar.\qquad Final: $H(x)=\text{sign}\big(\sum_t\alpha_t h_t(x)\big)$.
+\end{formula}
+\textbf{Cantidad de modelos $T$}: hiperparámetro, elegido por validación cruzada / early stopping (o frenar si $\varepsilon_t\ge0.5$ o $=0$).
+
+\textbf{Gradient Boosting}: cada nuevo modelo ajusta el \textbf{gradiente negativo} de la pérdida (residuos $y-\hat y$ en MSE): $F_t=F_{t-1}+\eta\,h_t$, con learning rate $\eta$. AdaBoost = caso particular con pérdida exponencial que \emph{reponde instancias}; GB \emph{ajusta residuos}. \textbf{XGBoost}: usa gradiente y hessiano (2do orden), regularización $L_1/L_2$ sobre hojas y penalización por \#hojas, subsampling de filas/columnas, manejo nativo de faltantes.
+
+%=====================================================================
+\section{Ingeniería de atributos}\guia{9}
+
+\begin{formula}[Escalado]
+\[\text{Min-max: } x'=\frac{x-x_{\min}}{x_{\max}-x_{\min}}\in[0,1]\qquad \text{Z-score: } x'=\frac{x-\mu}{\sigma}\qquad \text{Robust: } x'=\frac{x-\text{mediana}}{IQR}\]
+\end{formula}
+\begin{itemize}
+  \item Min-max con casi todo en 0 y un valor en 1 $\Rightarrow$ \textbf{outlier} (o distribución muy asimétrica: precios). Alternativas: estandarizar si es normal; robust scaler o $\log(1+x)$ si hay outliers/cola larga; recortar (clipping).
+  \item Sin outliers y no normales $\Rightarrow$ min-max es razonable.
+  \item Todos los parámetros ($\mu,\sigma,\min,\max$, media para imputar) se calculan \textbf{solo con train} (en cada fold) y se aplican a val/control/producción.
+\end{itemize}
+
+\subsection{Valores faltantes}
+\begin{itemize}
+  \item Imputar con la media de \emph{todo} el dataset (incluyendo val/control) $\Rightarrow$ fuga de información $\Rightarrow$ \textbf{subestimación del error}. Correcto: calcular la media con el train de cada fold; para el modelo final, con todo Desarrollo; en \textbf{producción} usar ese mismo valor guardado (no la media de los datos nuevos).
+  \item Estrategias: media/mediana/moda; \textbf{columna indicadora} ``era faltante'' (el faltante puede ser informativo); valor centinela ($-1$) — funciona bien con \textbf{árboles} (lo separan con un corte) pero mal con KNN/lineales; imputación por regresión/KNN a partir de otras columnas. Para árboles, (b), (c) y (d) son buenas; (d) es la más segura.
+\end{itemize}
+
+\subsection{Categóricas}
+\begin{itemize}
+  \item \textbf{One-hot}: una columna binaria por valor (nominales: barrio, color). Dimensiones: Ciudad (1000) + Provincia (23) + Edad + Salario $=1025$ (o $1023$ si se descarta una columna por variable, \texttt{drop='first'}). Alta cardinalidad $\Rightarrow$ muchas dimensiones (maldición de la dimensión); alternativas: agrupar poco frecuentes, frequency/target encoding (este último con cuidado de leakage).
+  \item \textbf{Ordinal}: si hay orden natural (chico $<$ mediano $<$ grande $\to0,1,2$).
+  \item Ciudad y Provincia son redundantes (ciudad determina provincia).
+  \item \textbf{Orden de pasos}: (b) imputar $\to$ (c) codificar categóricas $\to$ (a) escalar (escalar al final para que las columnas imputadas/nuevas queden en la misma escala; el imputado no debe distorsionar el min/max). No escalar las one-hot (ya están en $\{0,1\}$).
+\end{itemize}
+
+\subsection{Nuevos atributos (ejemplos para KNN)}
+\begin{itemize}
+  \item \textbf{Fechas/horas}: día de la semana, mes, feriado/fin de semana, ``días desde publicación'', hora. Variables \textbf{cíclicas}: $(\sin\frac{2\pi h}{24},\cos\frac{2\pi h}{24})$ para que 23h y 0h queden cerca. Fecha puntual relevante (año nuevo) $\Rightarrow$ flag o ``días hasta año nuevo''.
+  \item \textbf{Lat/long}: distancia a un punto de interés (barrio chino, estación de bicis, centro), en km; o cluster/barrio.
+  \item Precio por m$^2$, m$^2$ por habitación; texto (nombre/apellido) $\to$ n-gramas de caracteres, longitud, terminaciones.
+  \item Siempre: escalar numéricos, one-hot a nominales, imputar faltantes (sin leakage).
+  \item \textbf{Árboles vs.\ KNN}: los árboles \textbf{no necesitan escalar} (invariantes a transformaciones monótonas) ni sufren atributos irrelevantes tanto; pueden usar atributos en unidades distintas tal cual. KNN sí necesita escalar y quitar atributos irrelevantes.
+\end{itemize}
+
+%=====================================================================
+\section{Chuleta final}
+\begin{multicols}{2}\small
+\begin{itemize}
+  \item $H=-\sum p\log_2p$;\ $G=1-\sum p^2$;\ ganancia $=M(S)-\sum\frac{|S_v|}{|S|}M(S_v)$.
+  \item Bayes óptimo: $\argmax_c P(x\mid c)P(c)$.
+  \item LDA $p=1$: $\delta_c=x\frac{\mu_c}{\sigma^2}-\frac{\mu_c^2}{2\sigma^2}+\log\pi_c$.
+  \item Frontera LDA: $\frac{\mu_1+\mu_2}2+\frac{\sigma^2}{\mu_1-\mu_2}\log\frac{\pi_2}{\pi_1}$.
+  \item NB: $\hat\pi_c\prod_j P(x_j\mid c)$ (indep.\ condicional).
+  \item Logística: $\sigma(w^\top x+b)$, log-loss.
+  \item SVM: margen $2/\|w\|$, $C$, kernels.
+  \item KNN: escalar; $0.1^{1/p}$.
+  \item $P=\frac{TP}{TP+FP}$, $R=\frac{TP}{TP+FN}$, $FPR=\frac{FP}{FP+TN}$.
+  \item $F_\beta=\frac{(1+\beta^2)TP}{(1+\beta^2)TP+\beta^2FN+FP}$.
+  \item AUC $=P(s^+>s^-)$, invariante a monótonas.
+  \item $R^2=1-SS_{res}/SS_{tot}$; MAE$\times a$, MSE$\times a^2$.
+  \item Error $=$ Sesgo$^2$ $+$ Var $+$ $\sigma^2$.
+  \item Bootstrap: $63.2\%$ únicos, $36.8\%$ OOB.
+  \item $\Var=\rho\sigma^2+\frac{1-\rho}B\sigma^2$.
+  \item AdaBoost: $\alpha=\frac12\ln\frac{1-\varepsilon}\varepsilon$.
+  \item Métrica global $=\sum_k\frac{n_k}{N}M_k$ (aditivas).
+  \item MLE Bernoulli: $\hat p=k/n$.
+  \item Todo ``fit'' de preprocesamiento: solo en train.
+\end{itemize}
+\end{multicols}
+
+\end{document}
